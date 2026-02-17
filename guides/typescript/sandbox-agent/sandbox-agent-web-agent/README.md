@@ -4,10 +4,16 @@
 
 This example runs Sandbox Agent inside a Daytona sandbox, then connects to it from your local Node.js script via the `sandbox-agent` TypeScript SDK.
 
+## Why Sandbox Agent SDK
+
+Most coding-agent stacks are provider-specific. Changing agents often means rewriting session creation, message transport, and streaming code.
+
+Sandbox Agent SDK gives you one stable API regardless of which coding agent is behind it. You can keep the same app logic and switch agents with config (`SANDBOX_AGENT`) instead of rewriting integrations.
+
 ## Features
 
 - **Remote execution in Daytona:** Agent runtime and commands execute inside an isolated sandbox.
-- **Local SDK control plane:** Your local script uses `SandboxAgent.connect(...)` to create and manage sessions.
+- **Unified control plane:** Use `SandboxAgent.connect(...)` and the same session API across agents.
 - **Flexible agent selection:** Set `SANDBOX_AGENT` for any supported agent ID.
 - **Simple runtime setup:** No snapshot required.
 

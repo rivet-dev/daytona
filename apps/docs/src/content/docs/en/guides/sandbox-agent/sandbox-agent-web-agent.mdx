@@ -5,7 +5,9 @@ description: Step-by-step guide to running Sandbox Agent inside Daytona sandboxe
 
 This guide shows how to run a [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent) server inside a Daytona sandbox and connect to it using the Sandbox Agent TypeScript SDK.
 
-The SDK gives you higher-level primitives for session lifecycle, prompting, and event streaming without writing raw ACP transport logic.
+Most coding-agent integrations are tightly coupled to one provider SDK or CLI. If you switch from one agent to another, you usually have to rewrite session handling, prompt calls, and streaming logic.
+
+Sandbox Agent SDK gives you one stable integration surface across agents. Your app talks to one server with one TypeScript client API, and you can switch agents by changing configuration (for example `SANDBOX_AGENT=codex` or `SANDBOX_AGENT=claude`) instead of rebuilding your app logic.
 
 ---
 
@@ -116,7 +118,7 @@ Press `Ctrl+C` to delete the sandbox and stop the script.
 
 **Key advantages:**
 
+- One app integration surface across multiple coding agents
+- Stable session lifecycle and event model (`createSession`, `resumeSession`, `session.onEvent`)
 - Isolated remote execution in Daytona sandboxes
-- Local SDK client with simple session APIs
-- Supports any agent via `SANDBOX_AGENT`
 - Minimal runtime setup (no snapshot required)
