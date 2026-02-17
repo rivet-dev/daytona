@@ -9,7 +9,7 @@ Running coding agents remotely is hard. Most SDKs assume local execution, SSH-ba
 Sandbox Agent solves three problems:
 
 - **Coding agents need sandboxes:** Sandbox Agent runs inside the sandbox and exposes HTTP/SSE so your app can control it remotely.
-- **Every coding agent is different:** Sandbox Agent provides one API so you can swap agents via `SANDBOX_AGENT` instead of rewriting integrations.
+- **Every coding agent is different:** Sandbox Agent provides one API so you can swap agents without rewriting integrations.
 - **Sessions are ephemeral:** Sandbox Agent emits a universal event schema so you can store, replay, and audit sessions outside the sandbox lifecycle.
 
 ## Features
@@ -52,7 +52,7 @@ Create a `.env` file with:
 - At least one model provider key:
   - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
   - `ANTHROPIC_API_KEY` (for `claude`)
-- Optional: `SANDBOX_AGENT` to explicitly select an agent ID
+- Optional: `AGENT` to explicitly select an agent ID
 
 ## Getting Started
 
@@ -74,7 +74,7 @@ Create a `.env` file with:
 
 1. Creates a Daytona sandbox.
 2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
-3. Starts a local agent registry override and installs the selected agent.
+3. Installs the selected agent.
 4. Starts `sandbox-agent server` on port 3000.
 5. Waits for health and creates a session using `sandbox-agent` SDK.
 

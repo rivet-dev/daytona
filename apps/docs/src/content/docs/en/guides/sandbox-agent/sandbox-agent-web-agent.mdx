@@ -64,7 +64,7 @@ OPENAI_API_KEY=your_openai_key
 # Optional
 # CODEX_API_KEY=your_codex_key
 # ANTHROPIC_API_KEY=your_anthropic_key
-# SANDBOX_AGENT=codex
+# AGENT=codex
 ```
 
 :::caution[API Key Security]
@@ -94,7 +94,7 @@ On startup, the script:
 
 1. Creates a Daytona sandbox.
 2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
-3. Starts a local agent registry override in the sandbox and installs the selected agent.
+3. Installs the selected agent.
 4. Starts `sandbox-agent server` on port `3000`.
 5. Waits for `/v1/health`, connects via `SandboxAgent.connect`, and creates a session.
 
@@ -118,7 +118,7 @@ const sdk = await SandboxAgent.connect({ baseUrl, token: SERVER_TOKEN })
 const session = await sdk.createSession({ agent })
 ```
 
-If `SANDBOX_AGENT` is set, that exact agent ID is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
+If `AGENT` is set, that exact agent ID is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
 
 #### Clean up
 

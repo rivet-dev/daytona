@@ -9,8 +9,7 @@ import * as dotenv from 'dotenv'
 
 dotenv.config()
 
-const SANDBOX_AGENT_PORT = 3000
-const AGENT_REGISTRY_PORT = 17899
+const SERVER_PORT = 3000
 const SERVER_TOKEN = 'sandbox-agent-daytona-demo-token'
 
 function sleep(ms: number): Promise<void> {
@@ -18,13 +17,13 @@ function sleep(ms: number): Promise<void> {
 }
 
 function getAgentId(): string {
-  const explicitAgent = process.env.SANDBOX_AGENT?.trim()
+  const explicitAgent = process.env.AGENT?.trim()
   if (explicitAgent) return explicitAgent
 
   if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) return 'codex'
   if (process.env.ANTHROPIC_API_KEY) return 'claude'
 
-  throw new Error('Set SANDBOX_AGENT or provide OPENAI_API_KEY/CODEX_API_KEY/ANTHROPIC_API_KEY')
+  throw new Error('Set AGENT or provide OPENAI_API_KEY/CODEX_API_KEY/ANTHROPIC_API_KEY')
 }
 
 function buildInspectorUrl(baseUrl: string, token: string, sessionId: string): string {
@@ -118,22 +117,15 @@ async function main(): Promise<void> {
     )
 
     console.log(`Installing agent (${agent})...`)
-    await runChecked('bash -lc "printf \'{\\"agents\\":[]}\\n\' >/tmp/acp-registry.json"')
-    await runChecked(
-      `nohup python3 -m http.server ${AGENT_REGISTRY_PORT} --bind 127.0.0.1 --directory /tmp >/tmp/agent-registry.log 2>&1 &`,
-    )
-    await runChecked(`sleep 1; pgrep -af 'http.server ${AGENT_REGISTRY_PORT}' >/dev/null`)
-    await runChecked(
-      `bash -lc 'SANDBOX_AGENT_ACP_REGISTRY_URL=http://127.0.0.1:${AGENT_REGISTRY_PORT}/acp-registry.json sandbox-agent install-agent ${agent}'`,
-    )
+    await runChecked(`sandbox-agent install-agent ${agent}`)
 
     console.log('Starting Sandbox Agent server...')
     await runChecked(
-      `nohup sandbox-agent server --token ${SERVER_TOKEN} --host 0.0.0.0 --port ${SANDBOX_AGENT_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
+      `nohup sandbox-agent server --token ${SERVER_TOKEN} --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
     )
     await runChecked("sleep 1; pgrep -af 'sandbox-agent server' >/dev/null")
 
-    const baseUrl = (await sandbox.getPreviewLink(SANDBOX_AGENT_PORT)).url
+    const baseUrl = (await sandbox.getPreviewLink(SERVER_PORT)).url
 
     console.log('Waiting for server health...')
     await waitForHealth(baseUrl, SERVER_TOKEN)
