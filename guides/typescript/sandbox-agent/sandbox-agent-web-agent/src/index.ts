@@ -6,16 +6,13 @@
 import { Daytona, Image, Sandbox } from '@daytonaio/sdk'
 import { SandboxAgent } from 'sandbox-agent'
 import * as dotenv from 'dotenv'
+import { setTimeout as delay } from 'node:timers/promises'
 
 dotenv.config()
 
 const SERVER_PORT = 3000
 const SANDBOX_AGENT_CLI_VERSION = '0.2.x'
 const SNAPSHOT_BASE_IMAGE = 'daytonaio/sandbox:0.6.0'
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
 
 function getAgent(): string {
   const explicitAgent = process.env.AGENT?.trim()
@@ -77,13 +74,9 @@ async function waitForHealth(baseUrl: string): Promise<void> {
 
   while (Date.now() < deadline) {
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000)
-
       const response = await fetch(`${baseUrl}/v1/health`, {
-        signal: controller.signal,
+        signal: AbortSignal.timeout(5_000),
       })
-      clearTimeout(timeout)
 
       if (response.ok) {
         const body = await response.json()
@@ -93,7 +86,7 @@ async function waitForHealth(baseUrl: string): Promise<void> {
       // Ignore transient startup/network failures while waiting for readiness.
     }
 
-    await sleep(500)
+    await delay(500)
   }
 
   throw new Error('Timed out waiting for Sandbox Agent health endpoint')
@@ -175,7 +168,7 @@ async function main(): Promise<void> {
 
     // Keep the process alive until interrupted.
     while (true) {
-      await sleep(60_000)
+      await delay(60_000)
     }
   } catch (error) {
     console.error('Error:', error)
