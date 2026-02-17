@@ -5,9 +5,17 @@ description: Step-by-step guide to running Sandbox Agent inside Daytona sandboxe
 
 This guide shows how to run a [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent) server inside a Daytona sandbox and connect to it using the Sandbox Agent TypeScript SDK.
 
-Most coding-agent integrations are tightly coupled to one provider SDK or CLI. If you switch from one agent to another, you usually have to rewrite session handling, prompt calls, and streaming logic.
+Running coding agents remotely is hard. Existing SDKs assume local execution, SSH-based approaches break streaming and interactive workflows, and each coding agent exposes a different API.
 
-Sandbox Agent SDK gives you one stable integration surface across agents. Your app talks to one server with one TypeScript client API, and you can switch agents by changing configuration (for example `SANDBOX_AGENT=codex` or `SANDBOX_AGENT=claude`) instead of rebuilding your app logic.
+Building this from scratch usually means reimplementing transport, session lifecycle, and event handling for every agent.
+
+Sandbox Agent solves three problems:
+
+- **Coding agents need sandboxes:** you should not let AI run arbitrary code on production hosts. Sandbox Agent runs inside an isolated Daytona sandbox and exposes HTTP/SSE for remote control.
+- **Every coding agent is different:** Claude Code, Codex, OpenCode, Cursor, Amp, and Pi have different APIs and behaviors. Sandbox Agent provides one API, so swapping agents is a config change, not a rewrite.
+- **Sessions are ephemeral:** raw agent transcripts usually disappear with sandbox/process lifecycle. Sandbox Agent emits a universal event schema you can store, replay, and audit in your own systems.
+
+In this Daytona guide, Daytona hosts the Sandbox Agent server and your local TypeScript app connects with `sandbox-agent` SDK to control sessions and stream events.
 
 ---
 
@@ -118,7 +126,7 @@ Press `Ctrl+C` to delete the sandbox and stop the script.
 
 **Key advantages:**
 
-- One app integration surface across multiple coding agents
-- Stable session lifecycle and event model (`createSession`, `resumeSession`, `session.onEvent`)
-- Isolated remote execution in Daytona sandboxes
+- One API across multiple coding agents (switch via `SANDBOX_AGENT`)
+- Universal session/event stream you can persist and audit
+- Runs inside Daytona sandboxes (no SSH/PTY glue)
 - Minimal runtime setup (no snapshot required)

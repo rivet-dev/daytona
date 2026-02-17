@@ -6,14 +6,18 @@ This example runs Sandbox Agent inside a Daytona sandbox, then connects to it fr
 
 ## Why Sandbox Agent SDK
 
-Most coding-agent stacks are provider-specific. Changing agents often means rewriting session creation, message transport, and streaming code.
+Running coding agents remotely is hard. Most SDKs assume local execution, SSH-based approaches break streaming and interactive workflows, and each coding agent exposes a different API.
 
-Sandbox Agent SDK gives you one stable API regardless of which coding agent is behind it. You can keep the same app logic and switch agents with config (`SANDBOX_AGENT`) instead of rewriting integrations.
+Sandbox Agent solves three problems:
+
+- **Coding agents need sandboxes:** Sandbox Agent runs inside the sandbox and exposes HTTP/SSE so your app can control it remotely.
+- **Every coding agent is different:** Sandbox Agent provides one API so you can swap agents via `SANDBOX_AGENT` instead of rewriting integrations.
+- **Sessions are ephemeral:** Sandbox Agent emits a universal event schema so you can store, replay, and audit sessions outside the sandbox lifecycle.
 
 ## Features
 
 - **Remote execution in Daytona:** Agent runtime and commands execute inside an isolated sandbox.
-- **Unified control plane:** Use `SandboxAgent.connect(...)` and the same session API across agents.
+- **Unified control plane:** Use `SandboxAgent.connect(...)` and the same session model across agents.
 - **Flexible agent selection:** Set `SANDBOX_AGENT` for any supported agent ID.
 - **Simple runtime setup:** No snapshot required.
 
