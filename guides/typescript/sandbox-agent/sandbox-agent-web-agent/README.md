@@ -16,10 +16,31 @@ Sandbox Agent solves three problems:
 
 ## Features
 
-- **Remote execution in Daytona:** Agent runtime and commands execute inside an isolated sandbox.
-- **Unified control plane:** Use `SandboxAgent.connect(...)` and the same session model across agents.
-- **Flexible agent selection:** Set `SANDBOX_AGENT` for any supported agent ID.
-- **Simple runtime setup:** No snapshot required.
+- **Universal Agent API**
+
+Claude Code, Codex, OpenCode, and Amp each have different APIs. We provide a single, unified interface to control them all.
+
+- **Streaming Events**
+
+Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
+
+- **Universal Schema**
+
+Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
+
+- **Runs Inside Any Sandbox**
+
+Run Sandbox Agent inside E2B, Daytona, Vercel Sandboxes, or Docker.
+
+- **Full Session Lifecycle Management**
+
+Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
+
+- **OpenCode Support**
+
+Experimental.
+
+Connect OpenCode CLI, SDK, or web UI to control agents through familiar OpenCode tooling.
 
 ## Prerequisites
 

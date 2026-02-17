@@ -124,9 +124,30 @@ If `SANDBOX_AGENT` is set, that exact agent ID is used. Otherwise the script def
 
 Press `Ctrl+C` to delete the sandbox and stop the script.
 
-**Key advantages:**
+### Features
 
-- One API across multiple coding agents (switch via `SANDBOX_AGENT`)
-- Universal session/event stream you can persist and audit
-- Runs inside Daytona sandboxes (no SSH/PTY glue)
-- Minimal runtime setup (no snapshot required)
+- **Universal Agent API**
+
+Claude Code, Codex, OpenCode, and Amp each have different APIs. We provide a single, unified interface to control them all.
+
+- **Streaming Events**
+
+Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
+
+- **Universal Schema**
+
+Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
+
+- **Runs Inside Any Sandbox**
+
+Run Sandbox Agent inside E2B, Daytona, Vercel Sandboxes, or Docker.
+
+- **Full Session Lifecycle Management**
+
+Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
+
+- **OpenCode Support**
+
+Experimental.
+
+Connect OpenCode CLI, SDK, or web UI to control agents through familiar OpenCode tooling.
