@@ -16,7 +16,7 @@ Sandbox Agent solves three problems:
 
 - **Universal Agent API**
 
-Claude Code, Codex, OpenCode, and Amp each have different APIs. We provide a single, unified interface to control them all.
+Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
 
 - **Streaming Events**
 
@@ -52,7 +52,7 @@ Create a `.env` file with:
 - At least one model provider key:
   - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
   - `ANTHROPIC_API_KEY` (for `claude`)
-- Optional: `AGENT` to explicitly select an agent ID
+- Optional: `AGENT` to explicitly select which agent to run
 
 ## Getting Started
 

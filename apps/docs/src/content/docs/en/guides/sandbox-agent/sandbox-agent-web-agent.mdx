@@ -118,7 +118,7 @@ const sdk = await SandboxAgent.connect({ baseUrl, token: SERVER_TOKEN })
 const session = await sdk.createSession({ agent })
 ```
 
-If `AGENT` is set, that exact agent ID is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
+If `AGENT` is set, that agent is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
 
 #### Clean up
 
@@ -128,7 +128,7 @@ Press `Ctrl+C` to delete the sandbox and stop the script.
 
 - **Universal Agent API**
 
-Claude Code, Codex, OpenCode, and Amp each have different APIs. We provide a single, unified interface to control them all.
+Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
 
 - **Streaming Events**
 
