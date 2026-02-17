@@ -33,7 +33,7 @@ Note: the first build can take several minutes. Subsequent runs reuse the snapsh
 Creating sandbox from snapshot...
 Starting Sandbox Agent server...
 Waiting for server health...
-Inspector UI: https://3000-xxxxxxxx.proxy.daytona.works/ui/?token=...&sessionId=...
+Inspector UI: https://3000-xxxxxxxx.proxy.daytona.works/ui/sessions/xxxxxxxx
 Session is ready. Press Ctrl+C to delete sandbox and exit.
 ```
 
@@ -119,7 +119,7 @@ const runChecked = async (command: string) => {
 After the server is healthy, the local SDK connects and creates a session:
 
 ```typescript
-const sdk = await SandboxAgent.connect({ baseUrl, token: SERVER_TOKEN })
+const sdk = await SandboxAgent.connect({ baseUrl })
 const session = await sdk.createSession({ agent })
 ```
 

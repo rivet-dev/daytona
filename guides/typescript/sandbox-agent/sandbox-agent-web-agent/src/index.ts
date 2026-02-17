@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { SnapshotState } from '@daytonaio/api-client'
 import { Daytona, Image, Sandbox } from '@daytonaio/sdk'
 import { SandboxAgent } from 'sandbox-agent'
 import * as dotenv from 'dotenv'
@@ -11,7 +10,6 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 const SERVER_PORT = 3000
-const SERVER_TOKEN = 'sandbox-agent-daytona-demo-token'
 const SANDBOX_AGENT_CLI_VERSION = '0.2.x'
 const SNAPSHOT_BASE_IMAGE = 'daytonaio/sandbox:0.6.0'
 
@@ -19,7 +17,7 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-function getAgentId(): string {
+function getAgent(): string {
   const explicitAgent = process.env.AGENT?.trim()
   if (explicitAgent) return explicitAgent
 
@@ -27,11 +25,6 @@ function getAgentId(): string {
   if (process.env.ANTHROPIC_API_KEY) return 'claude'
 
   throw new Error('Set AGENT or provide OPENAI_API_KEY/CODEX_API_KEY/ANTHROPIC_API_KEY')
-}
-
-function buildInspectorUrl(baseUrl: string, token: string, sessionId: string): string {
-  const root = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
-  return `${root}/ui/?token=${encodeURIComponent(token)}&sessionId=${encodeURIComponent(sessionId)}`
 }
 
 function getSnapshotName(agent: string): string {
@@ -43,7 +36,7 @@ function getSnapshotName(agent: string): string {
 async function ensureSnapshot(daytona: Daytona, snapshotName: string, agent: string): Promise<void> {
   try {
     const snapshot = await daytona.snapshot.get(snapshotName)
-    if (snapshot.state !== SnapshotState.ACTIVE) {
+    if (snapshot.state !== 'active') {
       console.log(`Activating snapshot "${snapshotName}" (state: ${snapshot.state})...`)
       await daytona.snapshot.activate(snapshot)
     }
@@ -79,7 +72,7 @@ async function ensureSnapshot(daytona: Daytona, snapshotName: string, agent: str
   )
 }
 
-async function waitForHealth(baseUrl: string, token: string): Promise<void> {
+async function waitForHealth(baseUrl: string): Promise<void> {
   const deadline = Date.now() + 120_000
 
   while (Date.now() < deadline) {
@@ -88,7 +81,6 @@ async function waitForHealth(baseUrl: string, token: string): Promise<void> {
       const timeout = setTimeout(() => controller.abort(), 5000)
 
       const response = await fetch(`${baseUrl}/v1/health`, {
-        headers: { Authorization: `Bearer ${token}` },
         signal: controller.signal,
       })
       clearTimeout(timeout)
@@ -114,7 +106,7 @@ async function main(): Promise<void> {
   }
 
   const daytona = new Daytona({ apiKey: process.env.DAYTONA_API_KEY })
-  const agent = getAgentId()
+  const agent = getAgent()
   const snapshotName = getSnapshotName(agent)
 
   const envVars: Record<string, string> = {}
@@ -165,19 +157,20 @@ async function main(): Promise<void> {
 
     console.log('Starting Sandbox Agent server...')
     await runChecked(
-      `nohup sandbox-agent server --token ${SERVER_TOKEN} --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
+      `nohup sandbox-agent --no-token server --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
     )
     await runChecked("sleep 1; pgrep -af 'sandbox-agent server' >/dev/null")
 
     const baseUrl = (await sandbox.getPreviewLink(SERVER_PORT)).url
 
     console.log('Waiting for server health...')
-    await waitForHealth(baseUrl, SERVER_TOKEN)
+    await waitForHealth(baseUrl)
 
-    const sdk = await SandboxAgent.connect({ baseUrl, token: SERVER_TOKEN })
+    const sdk = await SandboxAgent.connect({ baseUrl })
     const session = await sdk.createSession({ agent })
 
-    console.log(`Inspector UI: ${buildInspectorUrl(baseUrl, SERVER_TOKEN, session.id)}`)
+    const inspectorUrl = new URL(`/ui/sessions/${encodeURIComponent(session.id)}`, baseUrl).toString()
+    console.log(`Inspector UI: ${inspectorUrl}`)
     console.log('Session is ready. Press Ctrl+C to delete sandbox and exit.')
 
     // Keep the process alive until interrupted.
