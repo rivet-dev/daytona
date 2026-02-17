@@ -152,9 +152,10 @@ async function main(): Promise<void> {
     await runChecked(
       `nohup sandbox-agent --no-token server --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
     )
-    await runChecked("sleep 1; pgrep -af 'sandbox-agent server' >/dev/null")
+    await runChecked("sleep 1; pgrep -af 'sandbox-agent.*server' >/dev/null")
 
-    const baseUrl = (await sandbox.getPreviewLink(SERVER_PORT)).url
+    // Signed preview URL embeds auth in the URL, so we don't need custom headers.
+    const baseUrl = (await sandbox.getSignedPreviewUrl(SERVER_PORT, 4 * 60 * 60)).url
 
     console.log('Waiting for server health...')
     await waitForHealth(baseUrl)
