@@ -55,7 +55,7 @@ Create a `.env` file with:
 
 1. Creates a Daytona sandbox.
 2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
-3. Starts a local ACP registry override and installs the selected agent.
+3. Starts a local agent registry override and installs the selected agent.
 4. Starts `sandbox-agent server` on port 3000.
 5. Waits for health and creates a session using `sandbox-agent` SDK.
 

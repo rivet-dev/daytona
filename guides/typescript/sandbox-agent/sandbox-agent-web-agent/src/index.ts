@@ -10,7 +10,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 const SANDBOX_AGENT_PORT = 3000
-const ACP_REGISTRY_PORT = 17899
+const AGENT_REGISTRY_PORT = 17899
 const SERVER_TOKEN = 'sandbox-agent-daytona-demo-token'
 
 function sleep(ms: number): Promise<void> {
@@ -120,11 +120,11 @@ async function main(): Promise<void> {
     console.log(`Installing agent (${agent})...`)
     await runChecked('bash -lc "printf \'{\\"agents\\":[]}\\n\' >/tmp/acp-registry.json"')
     await runChecked(
-      `nohup python3 -m http.server ${ACP_REGISTRY_PORT} --bind 127.0.0.1 --directory /tmp >/tmp/acp-registry.log 2>&1 &`,
+      `nohup python3 -m http.server ${AGENT_REGISTRY_PORT} --bind 127.0.0.1 --directory /tmp >/tmp/agent-registry.log 2>&1 &`,
     )
-    await runChecked(`sleep 1; pgrep -af 'http.server ${ACP_REGISTRY_PORT}' >/dev/null`)
+    await runChecked(`sleep 1; pgrep -af 'http.server ${AGENT_REGISTRY_PORT}' >/dev/null`)
     await runChecked(
-      `bash -lc 'SANDBOX_AGENT_ACP_REGISTRY_URL=http://127.0.0.1:${ACP_REGISTRY_PORT}/acp-registry.json sandbox-agent install-agent ${agent}'`,
+      `bash -lc 'SANDBOX_AGENT_ACP_REGISTRY_URL=http://127.0.0.1:${AGENT_REGISTRY_PORT}/acp-registry.json sandbox-agent install-agent ${agent}'`,
     )
 
     console.log('Starting Sandbox Agent server...')
