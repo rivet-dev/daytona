@@ -1,7 +1,5 @@
 # Sandbox Agent SDK + Daytona
 
-## Overview
-
 This example runs Sandbox Agent inside a Daytona sandbox, then connects to it from your local Node.js script via the `sandbox-agent` TypeScript SDK.
 
 ## Why Sandbox Agent SDK
