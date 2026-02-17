@@ -52,6 +52,7 @@ Create a `.env` file with:
 - At least one model provider key:
   - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
   - `ANTHROPIC_API_KEY` (for `claude`)
+- Other agents may require additional credentials. Set any extra provider keys as environment variables so they are available inside the sandbox.
 - Optional: `AGENT` to explicitly select which agent to run
 
 ## Getting Started
