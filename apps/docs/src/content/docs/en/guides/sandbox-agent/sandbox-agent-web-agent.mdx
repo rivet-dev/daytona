@@ -21,15 +21,16 @@ In this Daytona guide, Daytona hosts the Sandbox Agent server and your local Typ
 
 ### 1. Workflow Overview
 
-When you run the script, it creates a Daytona sandbox, installs Sandbox Agent CLI inside that sandbox, installs your selected coding agent, and starts `sandbox-agent server`.
+When you run the script, it ensures a Daytona snapshot exists (building it on the first run), creates a sandbox from that snapshot, and starts `sandbox-agent server`.
 
 Your local TypeScript script then connects to that remote server using `SandboxAgent.connect(...)`, creates a session, and prints the Inspector URL:
 
 ```bash
 $ npm run start
-Creating sandbox...
-Installing Sandbox Agent CLI...
-Installing agent (codex)...
+Ensuring snapshot exists: sandbox-agent-codex
+Snapshot "sandbox-agent-codex" not found. Building it now...
+Note: the first build can take several minutes. Subsequent runs reuse the snapshot.
+Creating sandbox from snapshot...
 Starting Sandbox Agent server...
 Waiting for server health...
 Inspector UI: https://3000-xxxxxxxx.proxy.daytona.works/ui/?token=...&sessionId=...
@@ -78,6 +79,10 @@ Provider keys are passed into the Daytona sandbox environment and may be accessi
 Node.js 18 or newer is required.
 :::
 
+:::caution[First run will take time]
+The first time you run this script, it builds a custom Daytona snapshot so setup is cached for future runs. Snapshot builds can take several minutes.
+:::
+
 Install and run:
 
 ```bash
@@ -87,17 +92,16 @@ npm run start
 
 ### 3. Understanding the Script
 
-This example keeps the setup intentionally simple: it installs Sandbox Agent at runtime instead of using snapshots.
+This example uses Daytona snapshots so setup runs once and subsequent runs start quickly.
 
 #### Initialization
 
 On startup, the script:
 
-1. Creates a Daytona sandbox.
-2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
-3. Installs the selected agent.
-4. Starts `sandbox-agent server` on port `3000`.
-5. Waits for `/v1/health`, connects via `SandboxAgent.connect`, and creates a session.
+1. Ensures a snapshot exists for the selected agent (building it on the first run).
+2. Creates a Daytona sandbox from that snapshot.
+3. Starts `sandbox-agent server` on port `3000`.
+4. Waits for `/v1/health`, connects via `SandboxAgent.connect`, and creates a session.
 
 #### Main Script Code
 
@@ -120,6 +124,8 @@ const session = await sdk.createSession({ agent })
 ```
 
 If `AGENT` is set, that agent is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
+
+The snapshot name defaults to `sandbox-agent-${AGENT}`. You can override it with `SNAPSHOT_NAME` if you want to reuse a snapshot name across runs.
 
 #### Clean up
 

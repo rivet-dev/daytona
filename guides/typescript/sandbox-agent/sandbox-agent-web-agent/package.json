@@ -19,7 +19,7 @@
   "dependencies": {
     "@daytonaio/sdk": "^0.125.0",
     "dotenv": "^16.3.1",
-    "sandbox-agent": "latest"
+    "sandbox-agent": "0.2.x"
   },
   "devDependencies": {
     "@types/node": "^20.8.0",

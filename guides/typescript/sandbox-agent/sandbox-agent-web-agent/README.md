@@ -69,15 +69,16 @@ Create a `.env` file with:
    npm run start
    ```
 
+   The first run builds a Daytona snapshot (so setup doesn't repeat every time). This can take several minutes.
+
 3. Open the printed Inspector URL.
 
 ## How It Works
 
-1. Creates a Daytona sandbox.
-2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
-3. Installs the selected agent.
-4. Starts `sandbox-agent server` on port 3000.
-5. Waits for health and creates a session using `sandbox-agent` SDK.
+1. Ensures a Daytona snapshot exists for the selected agent (building it on the first run).
+2. Creates a sandbox from that snapshot.
+3. Starts `sandbox-agent server` on port 3000.
+4. Waits for health and creates a session using `sandbox-agent` SDK.
 
 ## References
 
