@@ -424,6 +424,18 @@ export const getSidebarConfig = (
         {
           type: 'link',
           href: localizePath(
+            '/docs/guides/sandbox-agent/sandbox-agent-web-agent',
+            locale
+          ),
+          label: t('sidebarconfig.sandboxAgent'),
+          disablePagination: true,
+          attrs: {
+            icon: 'package.svg',
+          },
+        },
+        {
+          type: 'link',
+          href: localizePath(
             '/docs/guides/langchain/langchain-data-analysis',
             locale
           ),

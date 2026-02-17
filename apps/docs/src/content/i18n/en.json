@@ -134,6 +134,7 @@
   "sidebarconfig.inngestAgentKit": "AgentKit",
   "sidebarconfig.mastra": "Mastra",
   "sidebarconfig.opencode": "OpenCode",
+  "sidebarconfig.sandboxAgent": "Sandbox Agent",
   "sidebarconfig.claude": "Claude",
   "sidebarconfig.openclaw": "OpenClaw",
   "sidebarconfig.codex": "Codex",

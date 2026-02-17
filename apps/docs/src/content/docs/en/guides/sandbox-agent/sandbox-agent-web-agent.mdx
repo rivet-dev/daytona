@@ -1,0 +1,122 @@
+---
+title: Build a Coding Agent Using Sandbox Agent SDK and Daytona
+description: Step-by-step guide to running Sandbox Agent inside Daytona sandboxes and controlling it from a local TypeScript app.
+---
+
+This guide shows how to run a [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent) server inside a Daytona sandbox and connect to it using the Sandbox Agent TypeScript SDK.
+
+The SDK gives you higher-level primitives for session lifecycle, prompting, and event streaming without writing raw ACP transport logic.
+
+---
+
+### 1. Workflow Overview
+
+When you run the script, it creates a Daytona sandbox, installs Sandbox Agent CLI inside that sandbox, installs your selected coding agent, and starts `sandbox-agent server`.
+
+Your local TypeScript script then connects to that remote server using `SandboxAgent.connect(...)`, creates a session, and prints the Inspector URL:
+
+```bash
+$ npm run start
+Creating sandbox...
+Installing Sandbox Agent CLI...
+Installing agent (codex)...
+Starting Sandbox Agent server...
+Waiting for server health...
+Inspector UI: https://3000-xxxxxxxx.proxy.daytona.works/ui/?token=...&sessionId=...
+Session is ready. Press Ctrl+C to delete sandbox and exit.
+```
+
+### 2. Project Setup
+
+#### Clone the Repository
+
+Clone Daytona and open this guide project:
+
+```bash
+git clone https://github.com/daytonaio/daytona.git
+cd daytona/guides/typescript/sandbox-agent/sandbox-agent-web-agent
+```
+
+#### Configure Environment
+
+Get your Daytona API key from [Daytona Dashboard](https://app.daytona.io/dashboard/keys).
+
+You also need at least one model provider key:
+
+- `OPENAI_API_KEY` or `CODEX_API_KEY` for `codex`
+- `ANTHROPIC_API_KEY` for `claude`
+
+Copy `.env.example` to `.env`:
+
+```bash
+DAYTONA_API_KEY=your_daytona_key
+OPENAI_API_KEY=your_openai_key
+# Optional
+# CODEX_API_KEY=your_codex_key
+# ANTHROPIC_API_KEY=your_anthropic_key
+# SANDBOX_AGENT=codex
+```
+
+:::caution[API Key Security]
+Provider keys are passed into the Daytona sandbox environment and may be accessible to code executed inside that sandbox.
+:::
+
+#### Local Usage
+
+:::note[Node.js Version]
+Node.js 18 or newer is required.
+:::
+
+Install and run:
+
+```bash
+npm install
+npm run start
+```
+
+### 3. Understanding the Script
+
+This example keeps the setup intentionally simple: it installs Sandbox Agent at runtime instead of using snapshots.
+
+#### Initialization
+
+On startup, the script:
+
+1. Creates a Daytona sandbox.
+2. Installs `@sandbox-agent/cli@0.2.x` inside the sandbox.
+3. Starts a local ACP registry override in the sandbox and installs the selected agent.
+4. Starts `sandbox-agent server` on port `3000`.
+5. Waits for `/v1/health`, connects via `SandboxAgent.connect`, and creates a session.
+
+#### Main Script Code
+
+The script runs all sandbox commands through a checked helper so failures are explicit:
+
+```typescript
+const runChecked = async (command: string) => {
+  const result = await sandbox.process.executeCommand(command)
+  if (result.exitCode !== 0) {
+    throw new Error(`Command failed (${result.exitCode}): ${command}\n${result.result || ''}`.trim())
+  }
+}
+```
+
+After the server is healthy, the local SDK connects and creates a session:
+
+```typescript
+const sdk = await SandboxAgent.connect({ baseUrl, token: SERVER_TOKEN })
+const session = await sdk.createSession({ agent })
+```
+
+If `SANDBOX_AGENT` is set, that exact agent ID is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
+
+#### Clean up
+
+Press `Ctrl+C` to delete the sandbox and stop the script.
+
+**Key advantages:**
+
+- Isolated remote execution in Daytona sandboxes
+- Local SDK client with simple session APIs
+- Supports any agent via `SANDBOX_AGENT`
+- Minimal runtime setup (no snapshot required)

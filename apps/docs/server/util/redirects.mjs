@@ -16,6 +16,7 @@ export const redirects = {
   'letta-code-agent': 'guides/letta-code/letta-code-agent',
   'mastra-coding-agent': 'guides/mastra/mastra-coding-agent',
   'opencode-web-agent': 'guides/opencode/opencode-web-agent',
+  'sandbox-agent-web-agent': 'guides/sandbox-agent/sandbox-agent-web-agent',
   'recursive-language-models': 'guides/rlm/recursive-language-models',
   'guides/recursive-language-models': 'guides/rlm/recursive-language-models',
   'trl-grpo-training': 'guides/reinforcement-learning/trl-grpo-training',

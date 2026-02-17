@@ -1,0 +1,28 @@
+{
+  "name": "sandbox-agent-web-agent",
+  "version": "1.0.0",
+  "description": "Run Sandbox Agent inside a Daytona sandbox and control it using the Sandbox Agent TypeScript SDK.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "sandbox-agent",
+    "daytona",
+    "coding-agent",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@daytonaio/sdk": "^0.125.0",
+    "dotenv": "^16.3.1",
+    "sandbox-agent": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "typescript": "^5.2.2"
+  }
+}
