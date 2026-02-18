@@ -430,7 +430,7 @@ export const getSidebarConfig = (
           label: t('sidebarconfig.sandboxAgent'),
           disablePagination: true,
           attrs: {
-            icon: 'package.svg',
+            icon: 'rivet.svg',
           },
         },
         {
