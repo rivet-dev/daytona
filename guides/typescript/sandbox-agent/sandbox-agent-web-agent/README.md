@@ -10,7 +10,7 @@ Sandbox Agent solves three problems:
 
 - **Coding agents need sandboxes:** Sandbox Agent runs inside the sandbox and exposes HTTP/SSE so your app can control it remotely.
 - **Every coding agent is different:** Sandbox Agent provides one API so you can swap agents without rewriting integrations.
-- **Sessions are ephemeral:** Sandbox Agent emits a universal event schema so you can store, replay, and audit sessions outside the sandbox lifecycle.
+- **Sessions are ephemeral:** Sandbox Agent emits a universal event schema so you can store, replay, and audit sessions outside the sandbox lifecycle. See [session persistence](https://sandboxagent.dev/docs/session-persistence).
 
 ## Features
 

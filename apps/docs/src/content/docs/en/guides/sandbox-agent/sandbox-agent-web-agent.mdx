@@ -13,7 +13,7 @@ Sandbox Agent solves three problems:
 
 - **Coding agents need sandboxes:** you should not let AI run arbitrary code on production hosts. Sandbox Agent runs inside an isolated Daytona sandbox and exposes HTTP/SSE for remote control.
 - **Every coding agent is different:** Claude Code, Codex, OpenCode, Cursor, Amp, and Pi have different APIs and behaviors. Sandbox Agent provides one API, so swapping agents is a config change, not a rewrite.
-- **Sessions are ephemeral:** raw agent transcripts usually disappear with sandbox/process lifecycle. Sandbox Agent emits a universal event schema you can store, replay, and audit in your own systems.
+- **Sessions are ephemeral:** raw agent transcripts usually disappear with sandbox/process lifecycle. Sandbox Agent emits a universal event schema you can store, replay, and audit in your own systems. See [session persistence](https://sandboxagent.dev/docs/session-persistence).
 
 In this Daytona guide, Daytona hosts the Sandbox Agent server and your local TypeScript app connects with `sandbox-agent` SDK to control sessions and stream events.
 
