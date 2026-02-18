@@ -1,6 +1,6 @@
 # Sandbox Agent SDK + Daytona
 
-This example runs Sandbox Agent inside a Daytona sandbox, then connects to it from your local Node.js script via the `sandbox-agent` TypeScript SDK.
+This example runs Sandbox Agent inside a Daytona sandbox, then connects to it from your local Node.js script via the [Sandbox Agent TypeScript SDK](https://sandboxagent.dev/docs/sdk-overview) (npm: [`sandbox-agent`](https://www.npmjs.com/package/sandbox-agent)).
 
 ## Why Sandbox Agent SDK
 
@@ -78,5 +78,7 @@ Create a `.env` file with:
 
 ## References
 
+- [Sandbox Agent SDK docs](https://sandboxagent.dev/docs/sdk-overview)
+- [`sandbox-agent` npm package](https://www.npmjs.com/package/sandbox-agent)
 - [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent)
 - [Daytona Documentation](https://www.daytona.io/docs)
