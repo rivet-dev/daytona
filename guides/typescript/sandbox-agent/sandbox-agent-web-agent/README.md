@@ -14,27 +14,10 @@ Sandbox Agent solves three problems:
 
 ## Features
 
-- **Universal Agent API**
-
-Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
-
-- **Streaming Events**
-
-Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
-
-- **Universal Schema**
-
-Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
-
-- **Full Session Lifecycle Management**
-
-Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
-
-- **OpenCode Support**
-
-Experimental.
-
-Connect OpenCode CLI, SDK, or web UI to control agents through familiar OpenCode tooling.
+- **Universal Agent API** Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
+- **Streaming Events** Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
+- **Universal Schema** Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
+- **Full Session Lifecycle Management** Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
 
 ## Prerequisites
 
@@ -48,7 +31,7 @@ Create a `.env` file with:
 - At least one model provider key:
   - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
   - `ANTHROPIC_API_KEY` (for `claude`)
-- Other agents may require additional credentials. Set any extra provider keys as environment variables so they are available inside the sandbox.
+  - [More credentials available](https://sandboxagent.dev/docs/credentials)
 - Optional: `AGENT` to explicitly select which agent to run
 
 ## Getting Started
