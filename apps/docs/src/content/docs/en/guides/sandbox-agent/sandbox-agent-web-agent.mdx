@@ -1,45 +1,35 @@
 ---
-title: Build a Coding Agent Using Sandbox Agent SDK and Daytona
-description: Step-by-step guide to running Sandbox Agent inside Daytona sandboxes and controlling it from a local TypeScript app.
+title: Build a Coding Agent with Sandbox Agent SDK on Daytona
+description: Run Sandbox Agent inside Daytona and control it from a local TypeScript app.
 ---
 
-This guide shows how to run a [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent) server inside a Daytona sandbox and connect to it using the [Sandbox Agent TypeScript SDK](https://sandboxagent.dev/docs/sdk-overview) (npm: [`sandbox-agent`](https://www.npmjs.com/package/sandbox-agent)).
+This guide runs [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent) inside Daytona, then connects from local TypeScript using the [Sandbox Agent SDK](https://sandboxagent.dev/docs/sdk-overview) (npm: [`sandbox-agent`](https://www.npmjs.com/package/sandbox-agent)).
 
-Running coding agents remotely is hard. Existing SDKs assume local execution, SSH-based approaches break streaming and interactive workflows, and each coding agent exposes a different API.
+Running coding agents remotely is hard: local-first SDK assumptions, fragile SSH streaming/TTY behavior, and incompatible agent APIs. Sandbox Agent SDK gives you one integration surface for session lifecycle, prompts, and streaming events across agents.
 
-Building this from scratch usually means reimplementing transport, session lifecycle, and event handling for every agent.
+Sandbox sessions are ephemeral by default. If you need replay/audit, use [session persistence](https://sandboxagent.dev/docs/session-persistence).
 
-Sandbox Agent solves three problems:
+## 1. What this script does
 
-- **Coding agents need sandboxes:** you should not let AI run arbitrary code on production hosts. Sandbox Agent runs inside an isolated Daytona sandbox and exposes HTTP/SSE for remote control.
-- **Every coding agent is different:** Claude Code, Codex, OpenCode, Cursor, Amp, and Pi have different APIs and behaviors. Sandbox Agent provides one API, so swapping agents is a config change, not a rewrite.
-- **Sessions are ephemeral:** raw agent transcripts usually disappear with sandbox/process lifecycle. Sandbox Agent emits a universal event schema you can store, replay, and audit in your own systems. See [session persistence](https://sandboxagent.dev/docs/session-persistence).
+When you run it, the script:
 
-In this Daytona guide, Daytona hosts the Sandbox Agent server and your local TypeScript app connects with `sandbox-agent` SDK to control sessions and stream events.
+1. Automatically prepares a Daytona snapshot for the selected provider-backed agent.
+2. Creates a sandbox from that snapshot.
+3. Starts `sandbox-agent server` on port `3000`.
+4. Creates a session and prints an Inspector URL.
 
----
+First run builds the snapshot and can take a few minutes. Next runs reuse it automatically.
 
-### 1. Workflow Overview
+## 2. Prerequisites
 
-When you run the script, it ensures a Daytona snapshot exists (building it on the first run), creates a sandbox from that snapshot, and starts `sandbox-agent server`.
+- Node.js 18+
+- `DAYTONA_API_KEY`
+- At least one provider key:
+  - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
+  - `ANTHROPIC_API_KEY` (for `claude`)
+- Additional agent credentials: [Sandbox Agent credential docs](https://sandboxagent.dev/docs/credentials)
 
-Your local TypeScript script then connects to that remote server using `SandboxAgent.connect(...)`, creates a session, and prints the Inspector URL:
-
-```bash
-$ npm run start
-Ensuring snapshot exists: sandbox-agent-codex
-Snapshot "sandbox-agent-codex" not found. Building it now...
-Note: the first build can take several minutes. Subsequent runs reuse the snapshot.
-Creating sandbox from snapshot...
-Starting Sandbox Agent server...
-Waiting for server health...
-Inspector UI: https://3000-xxxxxxxx.proxy.daytona.works/ui/sessions/xxxxxxxx
-Session is ready. Press Ctrl+C to delete sandbox and exit.
-```
-
-### 2. Project Setup
-
-#### Clone the Repository
+## 3. Project setup
 
 Clone Daytona and open this guide project:
 
@@ -48,17 +38,7 @@ git clone https://github.com/daytonaio/daytona.git
 cd daytona/guides/typescript/sandbox-agent/sandbox-agent-web-agent
 ```
 
-#### Configure Environment
-
-Get your Daytona API key from [Daytona Dashboard](https://app.daytona.io/dashboard/keys).
-
-You also need at least one model provider key:
-
-- `OPENAI_API_KEY` or `CODEX_API_KEY` for `codex`
-- `ANTHROPIC_API_KEY` for `claude`
-- Other agents may require additional credentials. Set any extra provider keys as environment variables so they are available inside the sandbox.
-
-Copy `.env.example` to `.env`:
+Create `.env`:
 
 ```bash
 DAYTONA_API_KEY=your_daytona_key
@@ -66,22 +46,7 @@ OPENAI_API_KEY=your_openai_key
 # Optional
 # CODEX_API_KEY=your_codex_key
 # ANTHROPIC_API_KEY=your_anthropic_key
-# AGENT=codex
 ```
-
-:::caution[API Key Security]
-Provider keys are passed into the Daytona sandbox environment and may be accessible to code executed inside that sandbox.
-:::
-
-#### Local Usage
-
-:::note[Node.js Version]
-Node.js 18 or newer is required.
-:::
-
-:::caution[First run will take time]
-The first time you run this script, it builds a custom Daytona snapshot so setup is cached for future runs. Snapshot builds can take several minutes.
-:::
 
 Install and run:
 
@@ -90,67 +55,45 @@ npm install
 npm run start
 ```
 
-### 3. Understanding the Script
+## 4. Main script flow
 
-This example uses Daytona snapshots so setup runs once and subsequent runs start quickly.
+### Start the server
 
-#### Initialization
+The script starts Sandbox Agent in the Daytona sandbox:
 
-On startup, the script:
-
-1. Ensures a snapshot exists for the selected agent (building it on the first run).
-2. Creates a Daytona sandbox from that snapshot.
-3. Starts `sandbox-agent server` on port `3000`.
-4. Waits for `/v1/health`, connects via `SandboxAgent.connect`, and creates a session.
-
-#### Main Script Code
-
-The script runs all sandbox commands through a checked helper so failures are explicit:
-
-```typescript
-const runChecked = async (command: string) => {
-  const result = await sandbox.process.executeCommand(command)
-  if (result.exitCode !== 0) {
-    throw new Error(`Command failed (${result.exitCode}): ${command}\n${result.result || ''}`.trim())
-  }
-}
+```ts
+await runChecked(
+  `nohup sandbox-agent --no-token server --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
+)
 ```
 
-After the server is healthy, the local SDK connects and creates a session:
+### Create session
 
-```typescript
+After health check succeeds, it connects and creates a session:
+
+```ts
 const sdk = await SandboxAgent.connect({ baseUrl })
 const session = await sdk.createSession({ agent })
 ```
 
-If `AGENT` is set, that agent is used. Otherwise the script defaults to `codex` when OpenAI/Codex keys exist, or `claude` when Anthropic key exists.
+### Send message + stream events
 
-The snapshot name defaults to `sandbox-agent-${AGENT}`. You can override it with `SNAPSHOT_NAME` if you want to reuse a snapshot name across runs.
+The example keeps this section commented by default so startup remains minimal. Uncomment it in `src/index.ts` to run one prompt and stream events:
 
-#### Clean up
+```ts
+// const off = session.onEvent((event) => {
+//   console.log(`[event] ${event.type}`)
+// })
+// await session.prompt([{ type: 'text', text: 'Reply with exactly: sandbox-agent-ready' }])
+// off()
+```
 
-Press `Ctrl+C` to delete the sandbox and stop the script.
+### Get response in Inspector
 
-### Features
+The script prints:
 
-- **Universal Agent API**
+```txt
+Inspector UI: https://.../ui/sessions/<session-id>
+```
 
-Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
-
-- **Streaming Events**
-
-Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
-
-- **Universal Schema**
-
-Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
-
-- **Full Session Lifecycle Management**
-
-Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
-
-- **OpenCode Support**
-
-Experimental.
-
-Connect OpenCode CLI, SDK, or web UI to control agents through familiar OpenCode tooling.
+Open that URL to inspect the session in real time.

@@ -4,20 +4,13 @@ This example runs Sandbox Agent inside a Daytona sandbox, then connects to it fr
 
 ## Why Sandbox Agent SDK
 
-Running coding agents remotely is hard. Most SDKs assume local execution, SSH-based approaches break streaming and interactive workflows, and each coding agent exposes a different API.
+Running coding agents remotely is hard. Most SDKs assume local execution, SSH breaks streaming/TTY behavior, and each coding agent has different APIs and event formats.
 
-Sandbox Agent solves three problems:
+Sandbox Agent SDK gives you one integration surface:
 
-- **Coding agents need sandboxes:** Sandbox Agent runs inside the sandbox and exposes HTTP/SSE so your app can control it remotely.
-- **Every coding agent is different:** Sandbox Agent provides one API so you can swap agents without rewriting integrations.
-- **Sessions are ephemeral:** Sandbox Agent emits a universal event schema so you can store, replay, and audit sessions outside the sandbox lifecycle. See [session persistence](https://sandboxagent.dev/docs/session-persistence).
-
-## Features
-
-- **Universal Agent API** Claude Code, Codex, OpenCode, and Amp each have different APIs. Sandbox Agent exposes one HTTP API that works across all of them.
-- **Streaming Events** Real-time SSE stream of everything the agent does. Persist to your storage, replay sessions, audit everything.
-- **Universal Schema** Standardized session schema that covers all features of all agents. Includes tool calls, permission requests, file edits, etc.
-- **Full Session Lifecycle Management** Create sessions, send messages, persist transcripts. Full session lifecycle management over HTTP.
+- Run the server in a sandbox and control it over HTTP/SSE.
+- Use one API across supported coding agents.
+- Stream events in a consistent schema so you can persist and replay sessions. See [session persistence](https://sandboxagent.dev/docs/session-persistence).
 
 ## Prerequisites
 
@@ -28,11 +21,10 @@ Sandbox Agent solves three problems:
 Create a `.env` file with:
 
 - `DAYTONA_API_KEY` (required)
-- At least one model provider key:
+- At least one provider key:
   - `OPENAI_API_KEY` or `CODEX_API_KEY` (for `codex`)
   - `ANTHROPIC_API_KEY` (for `claude`)
-  - [More credentials available](https://sandboxagent.dev/docs/credentials)
-- Optional: `AGENT` to explicitly select which agent to run
+- For additional agent credential options, see [Sandbox Agent credentials docs](https://sandboxagent.dev/docs/credentials).
 
 ## Getting Started
 
@@ -48,20 +40,33 @@ Create a `.env` file with:
    npm run start
    ```
 
-   The first run builds a Daytona snapshot (so setup doesn't repeat every time). This can take several minutes.
+   The first run builds a Daytona snapshot and can take a few minutes. After that, the script reuses it automatically.
 
 3. Open the printed Inspector URL.
 
 ## How It Works
 
-1. Ensures a Daytona snapshot exists for the selected agent (building it on the first run).
+1. Prepares a Daytona snapshot for the detected provider-backed agent.
 2. Creates a sandbox from that snapshot.
-3. Starts `sandbox-agent server` on port 3000.
-4. Waits for health and creates a session using `sandbox-agent` SDK.
+3. Starts `sandbox-agent server` inside Daytona.
+4. Creates a session with `SandboxAgent.connect(...)` and `createSession(...)`.
+5. Prints the Inspector URL.
+
+To run a prompt and stream events in your terminal, uncomment the section in `src/index.ts`:
+
+```ts
+// const off = session.onEvent((event) => {
+//   console.log(`[event] ${event.type}`)
+// })
+// await session.prompt([{ type: 'text', text: 'Reply with exactly: sandbox-agent-ready' }])
+// off()
+```
 
 ## References
 
 - [Sandbox Agent SDK docs](https://sandboxagent.dev/docs/sdk-overview)
+- [Sandbox Agent session persistence](https://sandboxagent.dev/docs/session-persistence)
+- [Sandbox Agent credentials](https://sandboxagent.dev/docs/credentials)
 - [`sandbox-agent` npm package](https://www.npmjs.com/package/sandbox-agent)
 - [Sandbox Agent](https://github.com/rivet-dev/sandbox-agent)
 - [Daytona Documentation](https://www.daytona.io/docs)

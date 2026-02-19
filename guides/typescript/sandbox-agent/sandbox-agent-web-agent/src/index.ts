@@ -13,37 +13,30 @@ dotenv.config()
 const SERVER_PORT = 3000
 const SANDBOX_AGENT_CLI_VERSION = '0.2.x'
 const SNAPSHOT_BASE_IMAGE = 'daytonaio/sandbox:0.6.0'
+const HEALTH_TIMEOUT_MS = 120_000
 
-function getAgent(): string {
-  const explicitAgent = process.env.AGENT?.trim()
-  if (explicitAgent) return explicitAgent
-
-  if (process.env.OPENAI_API_KEY || process.env.CODEX_API_KEY) return 'codex'
-  if (process.env.ANTHROPIC_API_KEY) return 'claude'
-
-  throw new Error('Set AGENT or provide OPENAI_API_KEY/CODEX_API_KEY/ANTHROPIC_API_KEY')
+function chooseAgent(envVars: Record<string, string>): string {
+  if (envVars.OPENAI_API_KEY || envVars.CODEX_API_KEY) return 'codex'
+  if (envVars.ANTHROPIC_API_KEY) return 'claude'
+  throw new Error('Set OPENAI_API_KEY/CODEX_API_KEY or ANTHROPIC_API_KEY')
 }
 
-function getSnapshotName(agent: string): string {
-  const explicit = process.env.SNAPSHOT_NAME?.trim()
-  if (explicit) return explicit
-  return `sandbox-agent-${agent}`
-}
+async function ensureSnapshot(daytona: Daytona, agent: string): Promise<string> {
+  const snapshotName = `sandbox-agent-${agent}`
 
-async function ensureSnapshot(daytona: Daytona, snapshotName: string, agent: string): Promise<void> {
   try {
     const snapshot = await daytona.snapshot.get(snapshotName)
     if (snapshot.state !== 'active') {
       console.log(`Activating snapshot "${snapshotName}" (state: ${snapshot.state})...`)
       await daytona.snapshot.activate(snapshot)
     }
-    return
+    return snapshotName
   } catch {
-    // Snapshot does not exist or isn't accessible. We'll attempt to create it below.
+    // Snapshot not found yet. Create it below.
   }
 
   console.log(`Snapshot "${snapshotName}" not found. Building it now...`)
-  console.log('Note: the first build can take several minutes. Subsequent runs reuse the snapshot.')
+  console.log('First build can take several minutes. Future runs reuse this snapshot automatically.')
 
   const image = Image.base(SNAPSHOT_BASE_IMAGE).runCommands([
     'bash',
@@ -67,10 +60,12 @@ async function ensureSnapshot(daytona: Daytona, snapshotName: string, agent: str
       onLogs: (chunk) => process.stdout.write(chunk),
     },
   )
+
+  return snapshotName
 }
 
 async function waitForHealth(baseUrl: string): Promise<void> {
-  const deadline = Date.now() + 120_000
+  const deadline = Date.now() + HEALTH_TIMEOUT_MS
 
   while (Date.now() < deadline) {
     try {
@@ -99,14 +94,14 @@ async function main(): Promise<void> {
   }
 
   const daytona = new Daytona({ apiKey: process.env.DAYTONA_API_KEY })
-  const agent = getAgent()
-  const snapshotName = getSnapshotName(agent)
 
   const envVars: Record<string, string> = {}
   if (process.env.ANTHROPIC_API_KEY) envVars.ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
   if (process.env.OPENAI_API_KEY) envVars.OPENAI_API_KEY = process.env.OPENAI_API_KEY
   if (process.env.CODEX_API_KEY) envVars.CODEX_API_KEY = process.env.CODEX_API_KEY
   if (!envVars.CODEX_API_KEY && envVars.OPENAI_API_KEY) envVars.CODEX_API_KEY = envVars.OPENAI_API_KEY
+
+  const agent = chooseAgent(envVars)
 
   let sandbox: Sandbox | undefined
   let cleaningUp = false
@@ -127,8 +122,8 @@ async function main(): Promise<void> {
   }
 
   try {
-    console.log(`Ensuring snapshot exists: ${snapshotName}`)
-    await ensureSnapshot(daytona, snapshotName, agent)
+    console.log(`Preparing snapshot for ${agent}...`)
+    const snapshotName = await ensureSnapshot(daytona, agent)
 
     console.log('Creating sandbox from snapshot...')
     sandbox = await daytona.create({ snapshot: snapshotName, envVars, autoStopInterval: 0 })
@@ -165,7 +160,16 @@ async function main(): Promise<void> {
 
     const inspectorUrl = new URL(`/ui/sessions/${encodeURIComponent(session.id)}`, baseUrl).toString()
     console.log(`Inspector UI: ${inspectorUrl}`)
-    console.log('Session is ready. Press Ctrl+C to delete sandbox and exit.')
+    console.log('Session is ready.')
+
+    // Uncomment to run one prompt and stream events in your terminal.
+    // const off = session.onEvent((event) => {
+    //   console.log(`[event] ${event.type}`)
+    // })
+    // await session.prompt([{ type: 'text', text: 'Reply with exactly: sandbox-agent-ready' }])
+    // off()
+
+    console.log('Press Ctrl+C to delete sandbox and exit.')
 
     // Keep the process alive until interrupted.
     while (true) {
