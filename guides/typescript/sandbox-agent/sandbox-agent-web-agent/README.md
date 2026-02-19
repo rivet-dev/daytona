@@ -40,17 +40,23 @@ Create a `.env` file with:
    npm run start
    ```
 
-   The first run builds a Daytona snapshot and can take a few minutes. After that, the script reuses it automatically.
+   The first run builds a shared Daytona snapshot (`sandbox-agent-ready`) and can take a few minutes. After that, the script reuses it automatically.
 
-3. Open the printed Inspector URL.
+3. To keep the sandbox alive while you inspect it:
+
+   ```bash
+   KEEP_ALIVE=1 npm run start
+   ```
+
+4. Open the printed Inspector URL.
 
 ## How It Works
 
-1. Prepares a Daytona snapshot for the detected provider-backed agent.
+1. Prepares a shared Daytona snapshot with `sandbox-agent`, `claude`, and `codex` installed.
 2. Creates a sandbox from that snapshot.
 3. Starts `sandbox-agent server` inside Daytona.
-4. Creates a session with `SandboxAgent.connect(...)` and `createSession(...)`.
-5. Prints the Inspector URL.
+4. Creates a session with `SandboxAgent.connect(...)` and `createSession(...)` (`claude` if `ANTHROPIC_API_KEY` is set, otherwise `codex`).
+5. Prints the Inspector URL, then deletes the sandbox (or keeps it running with `KEEP_ALIVE=1`).
 
 To run a prompt and stream events in your terminal, uncomment the section in `src/index.ts`:
 

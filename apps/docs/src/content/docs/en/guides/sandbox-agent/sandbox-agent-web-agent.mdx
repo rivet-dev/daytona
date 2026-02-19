@@ -13,12 +13,12 @@ Sandbox sessions are ephemeral by default. If you need replay/audit, use [sessio
 
 When you run it, the script:
 
-1. Automatically prepares a Daytona snapshot for the selected provider-backed agent.
+1. Automatically prepares a shared Daytona snapshot.
 2. Creates a sandbox from that snapshot.
 3. Starts `sandbox-agent server` on port `3000`.
 4. Creates a session and prints an Inspector URL.
 
-First run builds the snapshot and can take a few minutes. Next runs reuse it automatically.
+The snapshot name is `sandbox-agent-ready` and includes `sandbox-agent`, `claude`, and `codex`. First run builds it once and can take a few minutes. Next runs reuse it automatically.
 
 ## 2. Prerequisites
 
@@ -55,6 +55,12 @@ npm install
 npm run start
 ```
 
+To keep the sandbox alive while you inspect the session:
+
+```bash
+KEEP_ALIVE=1 npm run start
+```
+
 ## 4. Main script flow
 
 ### Start the server
@@ -62,7 +68,7 @@ npm run start
 The script starts Sandbox Agent in the Daytona sandbox:
 
 ```ts
-await runChecked(
+await run(
   `nohup sandbox-agent --no-token server --host 0.0.0.0 --port ${SERVER_PORT} >/tmp/sandbox-agent.log 2>&1 &`,
 )
 ```
@@ -75,6 +81,8 @@ After health check succeeds, it connects and creates a session:
 const sdk = await SandboxAgent.connect({ baseUrl })
 const session = await sdk.createSession({ agent })
 ```
+
+`agent` resolves to `claude` if `ANTHROPIC_API_KEY` is set, otherwise `codex`.
 
 ### Send message + stream events
 
@@ -96,4 +104,4 @@ The script prints:
 Inspector UI: https://.../ui/sessions/<session-id>
 ```
 
-Open that URL to inspect the session in real time.
+By default, the script deletes the sandbox after setup. Use `KEEP_ALIVE=1` to keep it running while you inspect the URL.
