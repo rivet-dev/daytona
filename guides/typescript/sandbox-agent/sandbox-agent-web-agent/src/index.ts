@@ -27,14 +27,10 @@ function getEnvVars(): Record<string, string> {
 async function waitForHealth(baseUrl: string): Promise<void> {
   const deadline = Date.now() + 120_000
   while (Date.now() < deadline) {
-    try {
-      const response = await fetch(`${baseUrl}/v1/health`, { signal: AbortSignal.timeout(5_000) })
-      if (response.ok) {
-        const body = await response.json()
-        if (body?.status === 'ok') return
-      }
-    } catch {
-      // Retry until timeout.
+    const [attempt] = await Promise.allSettled([fetch(`${baseUrl}/v1/health`, { signal: AbortSignal.timeout(5_000) })])
+    if (attempt.status === 'fulfilled' && attempt.value.ok) {
+      const body = await attempt.value.json()
+      if (body?.status === 'ok') return
     }
     await delay(500)
   }
@@ -51,10 +47,8 @@ async function main(): Promise<void> {
   }
 
   const agent = envVars.ANTHROPIC_API_KEY ? 'claude' : 'codex'
-  const hasSnapshot = await daytona.snapshot.get(SNAPSHOT).then(
-    () => true,
-    () => false,
-  )
+  const [snapshotLookup] = await Promise.allSettled([daytona.snapshot.get(SNAPSHOT)])
+  const hasSnapshot = snapshotLookup.status === 'fulfilled'
 
   if (!hasSnapshot) {
     console.log(`Snapshot "${SNAPSHOT}" not found. Building it now...`)
@@ -122,7 +116,4 @@ async function main(): Promise<void> {
   await sandbox.delete()
 }
 
-main().catch((error) => {
-  console.error('Error:', error)
-  process.exit(1)
-})
+await main()
